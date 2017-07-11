@@ -26,14 +26,14 @@
                     <div class="field">
                         <div class="ui left icon input">
                             <i class="lock icon"></i>
-                            <input type="password" name="password" placeholder="Mot de passe" v-model.trim="password">
+                            <input type="password" name="password" placeholder="Mot de passe" v-model.trim="password" required>
                         </div>
                     </div>
 
                     <div class="field">
                         <div class="ui left icon input">
                             <i class="lock icon"></i>
-                            <input type="password" name="password_confirmation" placeholder="Répéter le mot de passe" v-model.trim="password_confirmation">
+                            <input type="password" name="password_confirmation" placeholder="Répéter le mot de passe" v-model.trim="password_confirmation" required>
                         </div>
                     </div>
 
@@ -81,8 +81,6 @@
           if (this.isFormValid()) {
             this.isLoading = true
             firebase.auth().createUserWithEmailAndPassword(this.email, this.password).then(user => {
-              console.log('Utilisateur inscrit: ' + this.email)
-
               user.updateProfile({
                 displayName: this.name,
                 photoURL: 'http://www.gravatar.com/avatar/' + md5(user.email) + '?d=identicon'
@@ -93,12 +91,10 @@
                   this.$router.push('/login')
                 })
               }, error => {
-                console.log(error)
                 this.errors.push(error.message)
                 this.isLoading = false
               })
             }).catch(error => {
-              console.log(error)
               this.errors.push(error.message)
               this.isLoading = false
             })
