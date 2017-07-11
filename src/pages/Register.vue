@@ -1,18 +1,18 @@
 <template>
     <div class="container ui middle aligned center aligned grid login__container">
         <div class="column">
-            <h2 class="ui orange header">
+            <h2 class="ui blue header">
                 <div class="content">
                     #Slack Clone#
                 </div>
             </h2>
-            <form class="ui large form" :class="{'error' : hasErrors}">
+            <form class="ui large form" :class="{'error' : hasErrors}" @keyup.enter="register">
                 <div class="ui stacked segment">
 
                     <div class="field">
                         <div class="ui left icon input">
                             <i class="user icon"></i>
-                            <input type="text" name="name" placeholder="Pseudo" v-model.trim="name" required>
+                            <input type="text" name="name" placeholder="Pseudo" v-model.trim="name" required autofocus>
                         </div>
                     </div>
 
@@ -37,7 +37,7 @@
                         </div>
                     </div>
 
-                    <div class="ui fluid large orange button" @click.prevent="register" :class="{ 'loading': isLoading }">S'incrire</div>
+                    <div class="ui fluid large blue button" @click.prevent="register" :class="{ 'loading': isLoading }">S'incrire</div>
                 </div>
 
                 <div class="ui error message" v-if="hasErrors">

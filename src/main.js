@@ -21,11 +21,18 @@ window.firebase = firebase
 
 Vue.config.productionTip = false
 
-/* eslint-disable no-new */
-new Vue({
-  el: '#app',
-  router,
-  store,
-  template: '<App/>',
-  components: { App }
+const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+  // initialise la store
+  store.dispatch('setUser', user)
+
+  /* eslint-disable no-new */
+  new Vue({
+    el: '#app',
+    router,
+    store,
+    template: '<App/>',
+    components: { App }
+  })
+
+  unsubscribe() // pour ne pas charger plusieurs fois la vue
 })
