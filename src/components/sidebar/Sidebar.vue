@@ -3,12 +3,15 @@
         <h1 class="ui inverted center aligned header">#Slack Clone#</h1>
         <connected-user></connected-user>
         <channels></channels>
+        <div class="ui divider"></div>
+        <users></users>
     </div>
 </template>
 
 <script>
   import ConnectedUser from './ConnectedUser.vue'
   import Channels from './Channels.vue'
+  import Users from './Users.vue'
   export default {
     name: 'sidebar',
     data () {
@@ -17,7 +20,8 @@
     },
     components: {
       ConnectedUser,
-      Channels
+      Channels,
+      Users
     }
   }
 </script>

@@ -30,6 +30,7 @@
     name: 'connected-user',
     data () {
       return {
+        presenceRef: firebase.database().ref('presence')
       }
     },
     computed: {
@@ -37,6 +38,7 @@
     },
     methods: {
       logout () {
+        this.presenceRef.child(this.currentUser.uid).remove()
         firebase.auth().signOut()
         this.$store.dispatch('setUser', null)
         this.$router.push('/login')
