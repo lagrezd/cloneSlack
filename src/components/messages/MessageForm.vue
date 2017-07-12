@@ -7,9 +7,11 @@
                 </div>
                 <div class="field">
                     <button class="ui green button" @click.prevent="sendMessage">Envoyer</button>
-                    <button class="ui labeled icon button"><i class="cloud icon"></i>Fichier</button>
+                    <button class="ui labeled icon button" @click.prevent="openFileModal"><i class="cloud icon"></i>Fichier</button>
                 </div>
             </div>
+
+            <file-modal></file-modal>
         </div>
     </div>
 </template>
@@ -17,6 +19,7 @@
 <script>
     import { mapGetters } from 'vuex'
     import firebase from 'firebase'
+    import FileModal from './FileModal.vue'
     export default {
       name: 'message-form',
       data () {
@@ -53,7 +56,18 @@
               id: this.currentUser.uid
             }
           }
+        },
+        uploadFile (file, metadata) {
+          if (file === null) return false
+
+          // let pathToUpload = this.currentChannel.id
+        },
+        openFileModal () {
+          $('#fileModal').modal('show')
         }
+      },
+      components: {
+        FileModal
       }
     }
 </script>
