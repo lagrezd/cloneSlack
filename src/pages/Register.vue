@@ -88,7 +88,7 @@
                 // Enregistrement de l'utilisateur en bdd
                 this.saveUserToUsersRef(user).then(() => {
                   this.$store.dispatch('setUser', user)
-                  this.$router.push('/login')
+                  this.$router.push('/')
                 })
               }, error => {
                 this.errors.push(error.message)

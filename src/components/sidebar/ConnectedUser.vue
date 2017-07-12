@@ -5,7 +5,7 @@
                 <div class="ui mini image">
                     <img :src="currentUser.photoURL" alt="">
                 </div>
-                <div class="middle aLigned content">
+                <div class="middle aligned content">
                     <div class="ui container">
                         <div class="ui inverted header">
                             {{ currentUser.displayName }}

@@ -60,6 +60,7 @@
         login () {
           this.errors = []
           if (this.isFormValid()) {
+            this.isLoading = true
             firebase.auth().signInWithEmailAndPassword(this.email, this.password).then(user => {
               this.$store.dispatch('setUser', user)
               this.$router.push('/')

@@ -21,7 +21,7 @@ window.firebase = firebase
 
 Vue.config.productionTip = false
 
-const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+const unsuscribe = firebase.auth().onAuthStateChanged(user => {
   // initialise la store
   store.dispatch('setUser', user)
 
@@ -34,5 +34,5 @@ const unsubscribe = firebase.auth().onAuthStateChanged(user => {
     components: { App }
   })
 
-  unsubscribe() // pour ne pas charger plusieurs fois la vue
+  unsuscribe() // pour ne pas charger plusieurs fois la vue
 })
