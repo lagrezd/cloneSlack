@@ -7,7 +7,7 @@
                     <img :src="user.avatar" alt="avatar">
                 </div>
                 <div class="content">
-                    <span class="ui empty circular label connection__label" :class="{ 'olive': isOnline(user), 'red' : !isOnline(user) }"></span> {{ user.name }}
+                    <span class="ui empty circular label connection__label" :class="{ 'olive': isOnline(user), 'red': !isOnline(user) }"></span> {{ user.name }}
                 </div>
             </div>
         </div>
@@ -66,7 +66,7 @@
         })
       },
       addStatusToUser (userId, connected = true) {
-        let index = this.users.findIndex(user => user.id === userId)
+        let index = this.users.findIndex(user => user.uid === userId)
         if (index !== -1) {
           connected === true ? this.users[index].status = 'online' : this.users[index].status = 'offline'
         }
