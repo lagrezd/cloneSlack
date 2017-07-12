@@ -7,8 +7,8 @@
 </template>
 
 <script>
-  import ConnectedUser from './sidebar/ConnectedUser.vue'
-  import Channels from './sidebar/Channels.vue'
+  import ConnectedUser from './ConnectedUser.vue'
+  import Channels from './Channels.vue'
   export default {
     name: 'sidebar',
     data () {
