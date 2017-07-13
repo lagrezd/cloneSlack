@@ -36,7 +36,7 @@
           if (this.currentChannel !== null) {
             if (this.message.length > 0) {
               // envoi du message
-              this.$parent.messagesRef.child(this.currentChannel.id).push().set(this.createMessage()).then(() => {
+              this.$parent.getMessagesRef().child(this.currentChannel.id).push().set(this.createMessage()).then(() => {
 
               }).catch(error => {
                 this.errors.push(error.message)

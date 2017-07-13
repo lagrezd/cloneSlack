@@ -1,7 +1,11 @@
 <template>
     <div class="users__container">
         <h2 class="ui inverted center aligned header">Users</h2>
-        <div class="ui feed" v-for="user in users" :key="user.uid">
+        <div class="ui feed"
+             v-for="user in users"
+             :key="user.uid"
+             @click.prevent="changeChannel(user)"
+             :class="{'is_active': isActive(user)}">
             <div class="event">
                 <div class="label">
                     <img :src="user.avatar" alt="avatar">
@@ -28,7 +32,7 @@
       }
     },
     computed: {
-      ...mapGetters(['currentUser'])
+      ...mapGetters(['currentUser', 'currentChannel', 'isPrivate'])
     },
     mounted () {
       this.addListeners()
@@ -73,6 +77,22 @@
       },
       isOnline (user) {
         return user.status === 'online'
+      },
+      changeChannel (user) {
+        let channelId = this.getChannelId(user.uid)
+        let channel = {
+          id: channelId,
+          name: user.name
+        }
+        this.$store.dispatch('setPrivate', true)
+        this.$store.dispatch('setCurrentChannel', channel)
+      },
+      isActive (user) {
+        let channelId = this.getChannelId(user.uid)
+        return this.currentChannel.id === channelId
+      },
+      getChannelId (userId) {
+        return userId < this.currentUser.uid ? userId + '/' + this.currentUser.uid : this.currentUser.uid + '/' + userId
       },
       detachListeners () {
         this.usersRef.off()

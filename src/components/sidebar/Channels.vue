@@ -59,7 +59,7 @@
       }
     },
     computed: {
-      ...mapGetters(['currentChannel']),
+      ...mapGetters(['currentChannel', 'setPrivate']),
       hasErrors () {
         return this.errors.length > 0
       }
@@ -94,6 +94,7 @@
         })
       },
       changeChannel (channel) {
+        this.$store.dispatch('setPrivate', false)
         this.$store.dispatch('setCurrentChannel', channel)
       },
       detachListeners () {
