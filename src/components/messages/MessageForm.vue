@@ -11,7 +11,15 @@
                 </div>
             </div>
 
-            <file-modal></file-modal>
+            <!-- ProgressBar Upload File -->
+            <div class="ui small orange inverted progress" data-total="100" id="uploadedFile" v-if="uploadState != null">
+                <div class="bar">
+                    <div class="progress"></div>
+                </div>
+                <div class="label">{{ uploadLabel }}</div>
+            </div>
+
+            <file-modal ref="file_modal"></file-modal>
         </div>
     </div>
 </template>
@@ -20,16 +28,30 @@
     import { mapGetters } from 'vuex'
     import firebase from 'firebase'
     import FileModal from './FileModal.vue'
+    import uuidV4 from 'uuid-v4'
     export default {
       name: 'message-form',
       data () {
         return {
           message: '',
-          errors: []
+          errors: [],
+          storageRef: firebase.storage().ref(),
+          uploadTask: null,
+          uploadState: null
         }
       },
       computed: {
-        ...mapGetters(['currentChannel', 'currentUser'])
+        ...mapGetters(['currentChannel', 'currentUser', 'isPrivate']),
+        uploadLabel () {
+          switch (this.uploadState) {
+            case 'uploading':
+              return 'Envoi en cours...'
+            case 'error':
+              return 'Une erreur  s\'est produite lors du téléchargement'
+            case 'done':
+              return 'Téléchargemet terminé'
+          }
+        }
       },
       methods: {
         sendMessage () {
@@ -46,9 +68,8 @@
             }
           }
         },
-        createMessage () {
-          return {
-            content: this.message,
+        createMessage (fileUrl = null) {
+          let message = {
             timestamp: firebase.database.ServerValue.TIMESTAMP,
             user: {
               name: this.currentUser.displayName,
@@ -56,14 +77,69 @@
               id: this.currentUser.uid
             }
           }
+          if (fileUrl === null) {
+            message['content'] = this.message // content ou image/fichier
+          } else {
+            message['image'] = fileUrl
+          }
+          return message
         },
         uploadFile (file, metadata) {
           if (file === null) return false
 
-          // let pathToUpload = this.currentChannel.id
+          let pathToUpload = this.currentChannel.id
+          let ref = this.$parent.getMessagesRef()
+          let filePath = this.getPath() + '/' + uuidV4() + '.jpg' // tchat/public/gjlgjchrgmlshcg.jpg
+
+          // Upload du fichier
+          this.uploadTask = this.storageRef.child(filePath).put(file, metadata)
+          this.uploadState = 'uploading'
+
+          this.uploadTask.on('state_changed', snap => {
+            // Upload en cours
+            let percent = (snap.bytesTransferred / snap.totalBytes) * 100
+            $('#uploadedFile').progress('set percent', percent)
+          }, error => {
+            // Erreurs
+            this.errors.push(error.message)
+            this.uploadState = 'error'
+            this.uploadTask = null
+          }, () => {
+            // Upload terminé
+            this.uploadState = 'done'
+
+            // reset le form
+            this.$refs.file_modal.resetForm()
+
+            // récupérer l'url du fichier
+            let fileUrl = this.uploadTask.snapshot.downloadURL
+            this.sendFileMessage(fileUrl, ref, pathToUpload)
+          })
+        },
+        sendFileMessage (fileUrl, ref, pathToUpload) {
+          ref.child(pathToUpload).push().set(this.createMessage(fileUrl)).then(() => {
+            this.$nextTick(() => {
+              $('html, body').scrollTop($(document).height())
+            })
+          }).catch(error => {
+            this.errors.push(error.message)
+          })
         },
         openFileModal () {
           $('#fileModal').modal('show')
+        },
+        getPath () {
+          if (this.isPrivate) {
+            return 'tchat/private/' + this.currentChannel.id // user1/user2
+          } else {
+            return 'tchat/public'
+          }
+        }
+      },
+      beforeDestroy () {
+        if (this.uploadTask !== null) {
+          this.uploadTask.cancel()
+          this.uploadTask = null
         }
       },
       components: {
