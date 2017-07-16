@@ -7,7 +7,7 @@
                 </div>
                 <div class="field">
                     <button class="ui green button" @click.prevent="sendMessage">Envoyer</button>
-                    <button class="ui labeled icon button" @click.prevent="openFileModal"><i class="cloud icon"></i>Fichier</button>
+                    <button class="ui labeled icon button" @click.prevent="openFileModal" :class="{'disabled': uploadState == 'uploading'}"><i class="cloud icon"></i>Fichier</button>
                 </div>
             </div>
 

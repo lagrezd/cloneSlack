@@ -7,7 +7,10 @@
                     v-for="channel in channels"
                     :key="channel.id"
                     :class="{'is_active' : setChannelActive(channel)}"
-                    @click="changeChannel(channel)"># {{ channel.name }}</li>
+                    @click="changeChannel(channel)">
+                    # {{ channel.name }}
+                    <div class="ui label purple channel__count" v-if="getNotification(channel) > 0 && channel.id !== currentChannel.id">{{ getNotification(channel) }}</div>
+                </li>
             </ul>
         </div>
 
@@ -54,12 +57,15 @@
         channels: [],
         new_channel: '',
         channelsRef: firebase.database().ref('channels'),
+        messagesRef: firebase.database().ref('messages'),
         errors: [],
-        firstLoad: true
+        firstLoad: true,
+        notifCount: [],
+        channel: null
       }
     },
     computed: {
-      ...mapGetters(['currentChannel', 'setPrivate']),
+      ...mapGetters(['currentChannel', 'setPrivate', 'isPrivate']),
       hasErrors () {
         return this.errors.length > 0
       }
@@ -67,15 +73,67 @@
     mounted () {
       this.addListeners()
     },
+    watch: {
+      isPrivate () {
+        if (this.isPrivate()) {
+          this.resetNotification()
+        }
+      }
+    },
     methods: {
       addListeners () {
         this.channelsRef.on('child_added', snap => {
           this.channels.push(snap.val()) // { id: id_aleatoire, name: name }
           if (this.firstLoad && this.channels.length > 0) {
             this.$store.dispatch('setCurrentChannel', this.channels[0])
+            this.channel = this.channels[0]
           }
           this.firstLoad = false
+
+          // Rajout du listeners pour gérer les notifs
+          this.addCountListener(snap.key)
         })
+      },
+      addCountListener (channelId) {
+        this.messagesRef.child(channelId).on('value', snap => {
+          this.handleNotifications(channelId, this.currentChannel.id, this.notifCount, snap)
+        })
+      },
+      handleNotifications (channelId, currentChannelId, notifCount, snap) {
+        let lastTotal = 0
+        /* notifCount = {
+            id
+            total
+            lastKnowTotal
+            notif
+            } */
+        let index = notifCount.findIndex(el => el.id === channelId)
+
+        if (index !== -1) { // si on a quelque chose
+          if (channelId !== currentChannelId) {
+            lastTotal = notifCount[index].total
+            if (snap.numChildren() - lastTotal > 0) {
+              notifCount[index].notif = snap.numChildren() - lastTotal
+            }
+          }
+          notifCount[index].lastKnownTotal = snap.numChildren()
+        } else {
+          notifCount.push({
+            id: channelId,
+            total: snap.numChildren(),
+            lastKnownTotal: snap.numChildren(),
+            notif: 0
+          })
+        }
+      },
+      getNotification (channel) {
+        let notif = 0
+        this.notifCount.forEach(el => {
+          if (el.id === channel.id) {
+            notif = el.notif
+          }
+        })
+        return notif
       },
       openChannelModal () {
         $('#channelModal').modal('show')
@@ -94,11 +152,23 @@
         })
       },
       changeChannel (channel) {
+        this.resetNotification()
         this.$store.dispatch('setPrivate', false)
         this.$store.dispatch('setCurrentChannel', channel)
+        this.channel = channel
+      },
+      resetNotification () {
+        let index = this.notifCount.findIndex(el => el.id === this.channel.id)
+        if (index === -1) {
+          this.notifCount[index].total = this.notifCount[index].lastKnownTotal
+          this.notifCount[index].notif = 0
+        }
       },
       detachListeners () {
         this.channelsRef.off()
+        this.channels.forEach(el => {
+          this.messagesRef.child(el.id).off() // messages/fjjoernvjdnj
+        })
       },
       setChannelActive (channel) {
         return channel.id === this.currentChannel.id
