@@ -50,6 +50,7 @@
 <script>
   import firebase from 'firebase'
   import { mapGetters } from 'vuex'
+  import mixin from '../mixins'
   export default {
     name: 'channels',
     data () {
@@ -64,21 +65,22 @@
         channel: null
       }
     },
+    mixins: [mixin],
     computed: {
       ...mapGetters(['currentChannel', 'setPrivate', 'isPrivate']),
       hasErrors () {
         return this.errors.length > 0
       }
     },
-    mounted () {
-      this.addListeners()
-    },
     watch: {
       isPrivate () {
-        if (this.isPrivate()) {
-          this.resetNotification()
+        if (this.isPrivate) {
+          this.resetNotifications()
         }
       }
+    },
+    mounted () {
+      this.addListeners()
     },
     methods: {
       addListeners () {
@@ -98,33 +100,6 @@
         this.messagesRef.child(channelId).on('value', snap => {
           this.handleNotifications(channelId, this.currentChannel.id, this.notifCount, snap)
         })
-      },
-      handleNotifications (channelId, currentChannelId, notifCount, snap) {
-        let lastTotal = 0
-        /* notifCount = {
-            id
-            total
-            lastKnowTotal
-            notif
-            } */
-        let index = notifCount.findIndex(el => el.id === channelId)
-
-        if (index !== -1) { // si on a quelque chose
-          if (channelId !== currentChannelId) {
-            lastTotal = notifCount[index].total
-            if (snap.numChildren() - lastTotal > 0) {
-              notifCount[index].notif = snap.numChildren() - lastTotal
-            }
-          }
-          notifCount[index].lastKnownTotal = snap.numChildren()
-        } else {
-          notifCount.push({
-            id: channelId,
-            total: snap.numChildren(),
-            lastKnownTotal: snap.numChildren(),
-            notif: 0
-          })
-        }
       },
       getNotification (channel) {
         let notif = 0
@@ -152,14 +127,14 @@
         })
       },
       changeChannel (channel) {
-        this.resetNotification()
+        this.resetNotifications()
         this.$store.dispatch('setPrivate', false)
         this.$store.dispatch('setCurrentChannel', channel)
         this.channel = channel
       },
-      resetNotification () {
+      resetNotifications () {
         let index = this.notifCount.findIndex(el => el.id === this.channel.id)
-        if (index === -1) {
+        if (index !== -1) {
           this.notifCount[index].total = this.notifCount[index].lastKnownTotal
           this.notifCount[index].notif = 0
         }
